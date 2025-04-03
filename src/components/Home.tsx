@@ -22,16 +22,25 @@ function Home({height}:{height:number}){
         { value: '#FFFFFF', name: 'White' }
     ]
     const withData =[1,2,3,4,5,6,7,8,9,10]
+    const getContext = () => {
+        const canvas = canvasRef.current;
+        if (!canvas) return null;
+        const context = canvas.getContext('2d');
+        if (!context) {
+            setError('Canvas context not available');
+            return null;
+        }
+        return { context, canvas };
+    };
 
     useEffect(()=>{
-        const canvas = canvasRef.current
-        if (canvas) {
+            const data=getContext()
+            if(! data) return
+            const {context,canvas}=data
             canvas.height=height
             canvas.width=canvas.parentElement?.clientWidth||800
-            const context = canvas.getContext('2d');
-            if(!context) {
-                setError('Canvas context not available');
-                return;}
+            
+            
 
             context.lineCap='round'
             context.lineJoin='round'
@@ -42,17 +51,13 @@ function Home({height}:{height:number}){
 
             
             
-            }},[])
+            },[])
 
             const updateCanvas = (e:React.ChangeEvent<HTMLSelectElement>) => {
                 const {name,value} = e.target
-                const canvas = canvasRef.current;
-                if (!canvas) return;
-                
-                const context = canvas.getContext("2d");
-                if(!context) {setError('Canvas context not available') 
-                    return;
-                }
+                const data=getContext()
+                if(! data) return
+                const {context}=data
                 if(name === "color") {
                     
                     
@@ -77,12 +82,13 @@ function Home({height}:{height:number}){
                 
                
               };
+
+             
               
             const startDrawing=(e:React.MouseEvent<HTMLCanvasElement, MouseEvent>)=>{
-                const canvas = canvasRef.current
-                if(!canvas) return
-                const context = canvas.getContext('2d')
-                if(!context) return
+                const data=getContext()
+                if(! data) return
+                const {context,canvas}=data
                 const rect = canvas.getBoundingClientRect()
                 const x = e.clientX-rect.left
                 const y =e.clientY-rect.top
@@ -95,10 +101,9 @@ function Home({height}:{height:number}){
 
             const draw=(e:React.MouseEvent<HTMLCanvasElement, MouseEvent>)=>{
                 if(!isDrwaing) return
-                const canvas = canvasRef.current
-                if(!canvas) return
-                const context = canvas.getContext('2d')
-                if(!context) return
+                const data=getContext()
+                if(! data) return
+                const {context,canvas}=data
                 const rect = canvas.getBoundingClientRect()
                 //curr pstoin of mouse
                 const x = e.clientX-rect.left
@@ -111,10 +116,9 @@ function Home({height}:{height:number}){
             }
               
             const stopDrawing = () => {
-                const canvas = canvasRef.current;
-                if(!canvas) return
-                const context = canvas.getContext('2d');
-                if(!context) return
+                const data=getContext()
+                if(! data) return
+                const {context}=data
                 // End the drawing path
                 context.closePath();
                 
@@ -122,10 +126,9 @@ function Home({height}:{height:number}){
                 setDrawing(false);
               };
               const clearCanvas = () => {
-                const canvas = canvasRef.current;
-                if(!canvas) return
-                const context = canvas.getContext('2d');
-                if(!context) return
+                const data=getContext()
+                if(! data) return
+                const {context,canvas}=data
                 // Clear the entire canvas
                 context.fillStyle = 'black';
                 context.fillRect(0, 0, canvas.width, canvas.height);
@@ -141,7 +144,40 @@ function Home({height}:{height:number}){
                 link.click();
 
               }
+              const startTochDrawing=(e:React.TouchEvent<HTMLCanvasElement>
+              )=>{
+                const data=getContext()
+                if(! data) return
+                const {context,canvas}=data
 
+                const rect = canvas.getBoundingClientRect();
+                const touch = e.touches[0];
+                const x = touch.clientX - rect.left;
+                const y = touch.clientY - rect.top;
+
+                context.beginPath();
+                context.moveTo(x, y);
+                setDrawing(true);
+
+              }
+
+              const Tochdraw=(e:React.TouchEvent<HTMLCanvasElement>
+              )=>{
+                if(!isDrwaing) return
+                const data=getContext()
+                if(! data) return
+                const {context,canvas}=data
+                const rect = canvas.getBoundingClientRect()
+                const touch = e.touches[0];
+                const x = touch.clientX - rect.left;
+                const y = touch.clientY - rect.top;
+                context.lineTo(x,y)
+
+                context.stroke()
+
+              }
+
+              
   return (
     <div className="min-h-screen bg-gray-900 p-8">
             {error ? (
@@ -181,15 +217,15 @@ function Home({height}:{height:number}){
 
                         <button 
                             onClick={clearCanvas}
-                            className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-red-500"
+                            className="bg-red-500 hover:bg-red-600 text-white lg:px-6 lg:py-2 px-3 rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-red-500"
                         >
-                            Clear Canvas
+                            Clear
                         </button>
                         <button 
                         onClick={savDrawing}
                          className="bg-green-500 text-white px-3 py-1 rounded"
                         >
-                            Save Drawing
+                            Save
                         </button>
                     </div>
 
@@ -200,7 +236,10 @@ function Home({height}:{height:number}){
                         onMouseLeave={stopDrawing}
                         ref={canvasRef}
                         className="border-2 border-gray-700 rounded-lg"
-                        style={{ touchAction: 'none' }}
+                        onTouchStart={(e)=>startTochDrawing(e)}
+                     onTouchMove={(e)=>Tochdraw(e)}
+                    onTouchEnd={stopDrawing}
+                            style={{ touchAction: 'none', width: '100%', height: 'auto' }}
                     ></canvas>
                 </div>
             )}
