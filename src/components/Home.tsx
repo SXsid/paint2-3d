@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { Outlet } from 'react-router-dom';
 
 
 function Home({height}:{height:number}){
@@ -10,6 +11,7 @@ function Home({height}:{height:number}){
         }
     })
     const [isDrwaing,setDrawing] = useState(false)
+    const [genrating, setgenrating] = useState(false)
     const [error, setError] = useState<string | null>(null);
     const colorsData=[
         { value: '#000000', name: 'Black' },
@@ -180,10 +182,13 @@ function Home({height}:{height:number}){
               
   return (
     <div className="min-h-screen bg-gray-900 p-8">
+       {genrating&&<div className="absolute inset-0 z-50 flex justify-center items-center bg-black bg-opacity-50">
+           <Outlet context={{setgenrating}} />
+         </div>}
             {error ? (
                 <div className="text-red-500 text-xl">{error}</div>
             ) : (
-                <div className="space-y-6">
+                <div className="space-y-6 relative">
                     <h1 className="text-4xl font-bold text-white mb-8">Let's build</h1>
                     
                     <div className="flex space-x-4 mb-6">
@@ -223,9 +228,15 @@ function Home({height}:{height:number}){
                         </button>
                         <button 
                         onClick={savDrawing}
-                         className="bg-green-500 text-white px-3 py-1 rounded"
+                         className="bg-green-500 hover:bg-green-600 text-white lg:px-6 lg:py-2 px-3 rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-green-500"
                         >
                             Save
+                        </button>
+                        <button 
+                        onClick={()=>setgenrating(true)}
+                         className="bg-cyan-500 hover:bg-cyan-600 text-white lg:px-6 lg:py-2 px-3 rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                        >
+                            Create
                         </button>
                     </div>
 
